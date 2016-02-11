@@ -50,6 +50,8 @@ public class XblBot extends PircBot {
   public String status(String friend) throws IOException {
     String presenceUrl = xboxApiBaseUrl + URLEncoder.encode(friend, "UTF-8") + presenceEndpoint;
     String status;
+    System.out.println("URL " + presenceUrl);
+    System.out.println("API key " + apiKey);
     CloseableHttpClient client = HttpClients.custom().build();
     HttpUriRequest request = RequestBuilder.get().setUri(presenceUrl)
                                .setHeader("X-AUTH", apiKey).build();
@@ -77,11 +79,11 @@ public class XblBot extends PircBot {
     return statuses;
   }
 
-  public void displayFriendStatuses(String channel, String sender) throws IOException {
+  public void displayFriendStatuses(String channel) throws IOException {
     Iterator it = friendStatuses().entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry pair = (Map.Entry)it.next();
-      sendMessage(channel, sender + " " + pair.getKey() + " is " + pair.getValue() + "\n");
+      sendMessage(channel, pair.getKey() + " is " + pair.getValue() + "\n");
       it.remove(); // avoids a ConcurrentModificationException
     }
   }
@@ -95,7 +97,7 @@ public class XblBot extends PircBot {
                         String login, String hostname, String message) {
     if (message.equalsIgnoreCase("mobbin")) {
       try {
-        displayFriendStatuses(channel, sender);
+        displayFriendStatuses(channel);
       } catch (IOException e) {
         System.out.println("ERROR " + e.getMessage());
         sendMessage(channel, sender + ": ERROR: " + e.getMessage());
