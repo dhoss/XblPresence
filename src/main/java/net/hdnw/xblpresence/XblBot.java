@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +48,7 @@ public class XblBot extends PircBot {
   }
 
   public String status(String friend) throws IOException {
-    String presenceUrl = xboxApiBaseUrl + friend + presenceEndpoint;
+    String presenceUrl = xboxApiBaseUrl + URLEncoder.encode(friend, "UTF-8") + presenceEndpoint;
     String status;
     CloseableHttpClient client = HttpClients.custom().build();
     HttpUriRequest request = RequestBuilder.get().setUri(presenceUrl)
