@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -59,7 +60,7 @@ public class XblBot extends PircBot {
       StringWriter writer = new StringWriter();
       IOUtils.copy(entity.getContent(), writer, "UTF-8");
       status = writer.toString();
-      System.out.println("STATUS " + status);
+      System.out.println("STATUS " + friend + ", " + status);
       EntityUtils.consume(entity);
     } finally {
       response.close();
@@ -67,11 +68,11 @@ public class XblBot extends PircBot {
     return status;
   }
 
-  public List<String> friendStatuses() throws IOException {
+  public HashMap friendStatuses() throws IOException {
     List<String> friends = watchlist();
-    List<String> statuses = new ArrayList<>();
+    HashMap statuses = new HashMap();
     for (String friend : friends) {
-      statuses.add(status(friend));
+      statuses.put(friend, status(friend));
     }
     return statuses;
   }
