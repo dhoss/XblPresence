@@ -22,6 +22,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.commons.io.IOUtils;
+import org.json.*;
 
 public class XblBot extends PircBot {
 
@@ -60,7 +61,7 @@ public class XblBot extends PircBot {
       HttpEntity entity = response.getEntity();
       StringWriter writer = new StringWriter();
       IOUtils.copy(entity.getContent(), writer, "UTF-8");
-      status = writer.toString();
+      status = nameFromJson(writer.toString());
       System.out.println("STATUS " + friend + ", " + status);
       EntityUtils.consume(entity);
     } finally {
@@ -76,6 +77,11 @@ public class XblBot extends PircBot {
       statuses.put(friend, status(friend));
     }
     return statuses;
+  }
+
+  private String nameFromJson(String json) {
+    JSONObject obj = new JSONObject(json);
+    return obj.getString("state");
   }
           
 }
