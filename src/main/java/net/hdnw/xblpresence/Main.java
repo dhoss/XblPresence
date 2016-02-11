@@ -12,13 +12,11 @@ public class Main {
     XblBot bot = new XblBot(System.getProperty("botName"), System.getProperty("friendsList"), System.getProperty("apiKey"));
 
     // Enable debugging output.
-   /* bot.setVerbose(true);
+    bot.setVerbose(true);
 
     bot.connect(System.getProperty("server"));
 
-    bot.joinChannel(System.getProperty("channel"), System.getProperty("key"));*/
-    System.out.println("FRIENDS");
-    System.out.println(bot.friendStatuses());
+    bot.joinChannel(System.getProperty("channel"), System.getProperty("key"));
 
   }
 

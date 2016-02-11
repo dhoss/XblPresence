@@ -7,9 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -62,7 +61,6 @@ public class XblBot extends PircBot {
       StringWriter writer = new StringWriter();
       IOUtils.copy(entity.getContent(), writer, "UTF-8");
       status = nameFromJson(writer.toString());
-      System.out.println("STATUS " + friend + ", " + status);
       EntityUtils.consume(entity);
     } finally {
       response.close();
@@ -79,9 +77,30 @@ public class XblBot extends PircBot {
     return statuses;
   }
 
+  public void displayFriendStatuses(String channel, String sender) throws IOException {
+    Iterator it = friendStatuses().entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry pair = (Map.Entry)it.next();
+      sendMessage(channel, sender + " " + pair.getKey() + " is " + pair.getValue() + "\n");
+      it.remove(); // avoids a ConcurrentModificationException
+    }
+  }
+
   private String nameFromJson(String json) {
     JSONObject obj = new JSONObject(json);
     return obj.getString("state");
+  }
+
+  public void onMessage(String channel, String sender,
+                        String login, String hostname, String message) {
+    if (message.equalsIgnoreCase("mobbin")) {
+      try {
+        displayFriendStatuses(channel, sender);
+      } catch (IOException e) {
+        System.out.println("ERROR " + e.getMessage());
+        sendMessage(channel, sender + ": ERROR: " + e.getMessage());
+      }
+    }
   }
           
 }
