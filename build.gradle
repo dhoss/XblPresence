@@ -1,4 +1,5 @@
 apply plugin: 'java'
+version = '0.0.1'
 jar {
   manifest {
     attributes 'Main-Class': 'net.hdnw.xblpresence.Main'
@@ -12,3 +13,27 @@ dependencies {
 repositories {
   mavenCentral()
 } 
+sourceSets {
+  main {
+     java {
+        srcDir 'src'
+        }
+     }
+  test {
+     java {
+        srcDir 'test'
+        }
+     }
+}
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Xbox Live Presence',
+                'Implementation-Version': version,
+                'Main-Class': 'net.hdnw.xblpresence.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
