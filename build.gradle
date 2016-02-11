@@ -1,1 +1,14 @@
 apply plugin: 'java'
+jar {
+  manifest {
+    attributes 'Main-Class': 'net.hdnw.xblpresence.Main'
+  }
+}
+dependencies {
+  compile fileTree(dir: 'libs', include: ['*.jar'])
+  compile 'pircbot:pircbot:1.5.0'
+  testCompile 'junit:junit:4.12'
+} 
+repositories {
+  mavenCentral()
+} 
