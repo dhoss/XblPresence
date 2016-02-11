@@ -16,7 +16,7 @@ public class Main {
 
     bot.connect(System.getProperty("server"));
 
-    bot.joinChannel(System.getProperty("channel"));
+    bot.joinChannel(System.getProperty("channel"), System.getProperty("key"));
 
   }
 
