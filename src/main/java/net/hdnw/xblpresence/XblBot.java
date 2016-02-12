@@ -121,7 +121,7 @@ public class XblBot extends PircBot {
         displayFriendStatuses(channel);
       } catch (IOException e) {
         System.out.println("ERROR " + e.getMessage());
-        sendMessage(channel, sender + ": ERROR: " + e.getMessage());
+        sendRawLine(channel + " " + sender + ": ERROR: " + e.getMessage());
       }
     }
   }
