@@ -47,9 +47,9 @@ public class XblBot extends PircBot {
     return friends;
   }
 
-  public String status(String friend) throws IOException {
+  public HashMap statusInfo(String friend) throws IOException {
     String presenceUrl = xboxApiBaseUrl + URLEncoder.encode(friend, "UTF-8") + presenceEndpoint;
-    String status;
+    HashMap info;
     System.out.println("URL " + presenceUrl);
     System.out.println("API key " + apiKey);
     CloseableHttpClient client = HttpClients.custom().build();
@@ -62,19 +62,20 @@ public class XblBot extends PircBot {
       HttpEntity entity = response.getEntity();
       StringWriter writer = new StringWriter();
       IOUtils.copy(entity.getContent(), writer, "UTF-8");
-      status = nameFromJson(writer.toString());
+      System.out.println("RAW JSON FOR " + friend + ": " + writer.toString());
+      info = infoFromJson(writer.toString());
       EntityUtils.consume(entity);
     } finally {
       response.close();
     }
-    return status;
+    return info;
   }
 
   public HashMap friendStatuses() throws IOException {
     List<String> friends = watchlist();
     HashMap statuses = new HashMap();
     for (String friend : friends) {
-      statuses.put(friend, status(friend));
+      statuses.put(friend, statusInfo(friend));
     }
     return statuses;
   }
@@ -84,19 +85,33 @@ public class XblBot extends PircBot {
     while (it.hasNext()) {
       Map.Entry pair = (Map.Entry)it.next();
       String name = (String)pair.getKey();
-      String status = (String)pair.getValue();
+      HashMap statusInfo = (HashMap)pair.getValue();
+      String status = (String)statusInfo.get("status");
+      String game = (String)statusInfo.get("playing");
       String color = Colors.GREEN;
+      String black = Colors.BLACK;
       if (status.equals("Offline")) {
         color = Colors.RED;
       }
-      sendMessage(channel, name + " is " + color + status + "\n");
+      if (game == null) {
+        game = "nothing";
+      }
+      sendMessage(channel, name + " is " + color + status + black + " playing: " + game + "\n");
       it.remove(); // avoids a ConcurrentModificationException
     }
   }
 
-  private String nameFromJson(String json) {
+  private HashMap infoFromJson(String json) {
+    System.out.println("JSON " + json);
+    HashMap info = new HashMap();
     JSONObject obj = new JSONObject(json);
-    return obj.getString("state");
+    info.put("status", obj.getString("state"));
+    try {
+      info.put("playing", obj.getJSONObject("lastSeen").getString("titleName"));
+    } catch (JSONException e) {
+      System.out.println("lastSeen key not present: " + e.getMessage());
+    }
+    return info;
   }
 
   public void onMessage(String channel, String sender,
