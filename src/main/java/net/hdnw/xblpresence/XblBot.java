@@ -83,7 +83,13 @@ public class XblBot extends PircBot {
     Iterator it = friendStatuses().entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry pair = (Map.Entry)it.next();
-      sendMessage(channel, pair.getKey() + " is " + pair.getValue() + "\n");
+      String name = (String)pair.getKey();
+      String status = (String)pair.getValue();
+      String color = Colors.GREEN;
+      if (status.equals("Offline")) {
+        color = Colors.RED;
+      }
+      sendMessage(channel, name + " is " + color + status + "\n");
       it.remove(); // avoids a ConcurrentModificationException
     }
   }
