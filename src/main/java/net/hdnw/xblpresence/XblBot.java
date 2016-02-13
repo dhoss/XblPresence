@@ -2,14 +2,11 @@ package net.hdnw.xblpresence;
 
 import org.jibble.pircbot.*;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 
-import org.apache.http.HttpEntity;
+/*import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -19,11 +16,17 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.http.util.EntityUtils;*/
+
+import com.ning.http.client.*;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.apache.commons.io.IOUtils;
 import org.json.*;
 
 public class XblBot extends PircBot {
+
 
   private String watchlistFile;
   private static final String xboxApiBaseUrl = "https://xboxapi.com/v2/";
@@ -47,45 +50,51 @@ public class XblBot extends PircBot {
     return friends;
   }
 
-  public HashMap statusInfo(String friend) throws IOException {
+  public Future<Hashtable> statusInfo(String friend) throws IOException {
+  //HashMap statusInfo(String friend) throws IOException {
     String presenceUrl = xboxApiBaseUrl + URLEncoder.encode(friend, "UTF-8") + presenceEndpoint;
     HashMap info;
     System.out.println("URL " + presenceUrl);
     System.out.println("API key " + apiKey);
-    CloseableHttpClient client = HttpClients.custom().build();
-    HttpUriRequest request = RequestBuilder.get().setUri(presenceUrl)
-                               .setHeader("X-AUTH", apiKey).build();
-    CloseableHttpResponse response = client.execute(request);
-    try {
+    RequestBuilder builder = new RequestBuilder("GET");
+    Request request = builder.setUrl(presenceUrl)
+                             .addHeader("X-AUTH", apiKey)
+                             .build();
+    AsyncHttpClient client = new AsyncHttpClient();
+    Future<Hashtable> f = client.executeRequest(request, new AsyncCompletionHandler<Hashtable>(){
 
-      System.out.println(response.getStatusLine());
-      HttpEntity entity = response.getEntity();
-      StringWriter writer = new StringWriter();
-      IOUtils.copy(entity.getContent(), writer, "UTF-8");
-      System.out.println("RAW JSON FOR " + friend + ": " + writer.toString());
-      info = infoFromJson(writer.toString());
-      EntityUtils.consume(entity);
-    } finally {
-      response.close();
-    }
-    return info;
+      @Override
+      public Hashtable onCompleted(Response response) throws Exception{
+        // Do something with the Response
+        return infoFromJson(response.getResponseBody());
+      }
+
+      @Override
+      public void onThrowable(Throwable t){
+        // Something wrong happened.
+      }
+    });
+
+
+    return f;
   }
 
-  public HashMap friendStatuses() throws IOException {
+  public Map friendStatuses() throws IOException, InterruptedException, ExecutionException {
     List<String> friends = watchlist();
-    HashMap statuses = new HashMap();
+    Map statuses = new HashMap();
     for (String friend : friends) {
       statuses.put(friend, statusInfo(friend));
     }
     return statuses;
   }
 
-  public void displayFriendStatuses(String channel) throws IOException {
+  public void displayFriendStatuses(String channel) throws IOException, InterruptedException, ExecutionException {
     Iterator it = friendStatuses().entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry pair = (Map.Entry)it.next();
       String name = (String)pair.getKey();
-      HashMap statusInfo = (HashMap)pair.getValue();
+      Future<Hashtable> statusFuture = (Future<Hashtable>)pair.getValue();
+      Hashtable statusInfo = (Hashtable)statusFuture.get();
       String status = (String)statusInfo.get("status");
       String game = (String)statusInfo.get("playing");
       String color = Colors.GREEN;
@@ -101,9 +110,9 @@ public class XblBot extends PircBot {
     }
   }
 
-  private HashMap infoFromJson(String json) {
+  private Hashtable infoFromJson(String json) {
     System.out.println("JSON " + json);
-    HashMap info = new HashMap();
+    Hashtable info = new Hashtable();
     JSONObject obj = new JSONObject(json);
     info.put("status", obj.getString("state"));
     try {
@@ -122,6 +131,10 @@ public class XblBot extends PircBot {
       } catch (IOException e) {
         System.out.println("ERROR " + e.getMessage());
         sendRawLine(channel + " " + sender + ": ERROR: " + e.getMessage());
+      } catch (ExecutionException e) {
+        System.out.println("EXECUTION EXCEPTION " + e.getMessage());
+      } catch (InterruptedException e) {
+        System.out.println("INTERRUPTED EXCEPTION " + e.getMessage());
       }
     }
   }
