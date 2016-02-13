@@ -88,15 +88,15 @@ public class XblBot extends PircBot {
       HashMap statusInfo = (HashMap)pair.getValue();
       String status = (String)statusInfo.get("status");
       String game = (String)statusInfo.get("playing");
-      String color = Colors.TEAL;
-      String black = Colors.BLACK;
+      String color = Colors.GREEN;
+      String black = Colors.TEAL;
       if (status.equals("Offline")) {
-        color = Colors.MAGENTA;
+        color = Colors.RED;
       }
       if (game == null) {
         game = "nothing";
       }
-      sendMessage(channel, name + " is " + color + status + black + " playing: " + game + "\n");
+      sendMessage(channel, black + name + " is " + color + status + black + " playing: " + game + "\n");
       it.remove(); // avoids a ConcurrentModificationException
     }
   }
