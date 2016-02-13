@@ -88,10 +88,10 @@ public class XblBot extends PircBot {
       HashMap statusInfo = (HashMap)pair.getValue();
       String status = (String)statusInfo.get("status");
       String game = (String)statusInfo.get("playing");
-      String color = Colors.GREEN;
+      String color = Colors.TEAL;
       String black = Colors.BLACK;
       if (status.equals("Offline")) {
-        color = Colors.RED;
+        color = Colors.MAGENTA;
       }
       if (game == null) {
         game = "nothing";
