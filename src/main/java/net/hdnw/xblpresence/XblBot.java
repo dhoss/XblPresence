@@ -105,7 +105,9 @@ public class XblBot extends PircBot {
       if (game == null) {
         game = "nothing";
       }
-      sendMessage(channel, black + name + " is " + color + status + black + " playing: " + game + "\n");
+      //PRIVMSG #mobwatchtest :
+      System.out.println("MESSAGE " + "PRIVMSG " + channel + ":" + black + name + " is " + color + status + black + " playing: " + game + "\n");
+      sendRawLine("PRIVMSG " + channel + " :" + black + name + " is " + color + status + black + " playing: " + game + "\n");
       it.remove(); // avoids a ConcurrentModificationException
     }
   }
