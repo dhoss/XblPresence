@@ -99,6 +99,7 @@ public class XblBot extends PircBot {
       String game = (String)statusInfo.get("playing");
       String color = Colors.GREEN;
       String black = Colors.TEAL;
+      String magenta = Colors.MAGENTA;
       if (status.equals("Offline")) {
         color = Colors.RED;
       }
@@ -106,8 +107,7 @@ public class XblBot extends PircBot {
         game = "nothing";
       }
       //PRIVMSG #mobwatchtest :
-      System.out.println("MESSAGE " + "PRIVMSG " + channel + ":" + black + name + " is " + color + status + black + " playing: " + game + "\n");
-      sendRawLine("PRIVMSG " + channel + " :" + black + name + " is " + color + status + black + " playing: " + game + "\n");
+      sendRawLine("PRIVMSG " + channel + " :" + black + name + " is " + color + status + black + " playing: " + magenta + game + "\n");
       it.remove(); // avoids a ConcurrentModificationException
     }
   }
